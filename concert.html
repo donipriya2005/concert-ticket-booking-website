@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>The Night Is Yours</title>
+<style>
+
+/* Background */
+body{
+margin:0;
+font-family:Arial;
+background:url("https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2");
+background-size:cover;
+background-position:center;
+color:white;
+text-align:center;
+}
+
+/* Common box */
+.box{
+background:rgba(0,0,0,0.85);
+padding:30px;
+width:350px;
+margin:80px auto;
+border-radius:15px;
+box-shadow:0 0 25px red;
+}
+
+/* Inputs */
+input{
+width:90%;
+padding:10px;
+margin:8px 0;
+border:none;
+border-radius:5px;
+}
+
+/* Buttons */
+button{
+padding:10px 20px;
+background:red;
+border:none;
+color:white;
+border-radius:5px;
+cursor:pointer;
+transition:0.3s;
+}
+
+button:hover{
+box-shadow:0 0 15px red;
+background:#ff4444;
+}
+
+/* Hide sections */
+.section{
+display:none;
+}
+
+/* Seats */
+.seat{
+width:30px;
+height:30px;
+background:red;
+display:inline-block;
+margin:5px;
+cursor:pointer;
+border-radius:5px;
+transition:0.3s;
+}
+
+.seat:hover{
+box-shadow:0 0 15px yellow;
+transform:scale(1.2);
+}
+
+.selected{
+background:lime;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>The Night Is Yours 🎵</h1>
+
+<!-- LOGIN -->
+<div id="login" class="box">
+<h2>Login</h2>
+<input type="text" id="loginUser" placeholder="Username">
+<input type="password" id="loginPass" placeholder="Password">
+<button onclick="login()">Login</button>
+<p>New User? <span onclick="showSignup()" style="color:red;cursor:pointer;">Sign Up</span></p>
+</div>
+
+<!-- SIGNUP -->
+<div id="signup" class="box section">
+<h2>Sign Up</h2>
+<input type="text" id="newUser" placeholder="Username">
+<input type="password" id="newPass" placeholder="Password">
+<button onclick="signup()">Register</button>
+</div>
+
+<!-- ARTIST -->
+<div id="artist" class="box section">
+<h2>DJ Vortex Live</h2>
+<p>March 15, 2026 - Chennai Grand Arena</p>
+<button onclick="showInstruction()">Claim The Spot 🔥</button>
+</div>
+
+<!-- INSTRUCTION -->
+<div id="instruction" class="box section">
+<h2>Concert Rules</h2>
+<p>✔ 18+ Only</p>
+<p>✔ Carry ID Proof</p>
+<p>✔ Entry closes at 8 PM</p>
+<button onclick="showSeats()">Enter Arena</button>
+</div>
+
+<!-- SEAT -->
+<div id="seatPage" class="box section">
+<h2>Select Your Seat</h2>
+<div id="seats"></div>
+
+<h3 id="totalAmount">Total Amount: ₹0</h3>
+
+<br>
+<button onclick="showDetails()">Continue</button>
+</div>
+
+<!-- USER DETAILS -->
+<div id="details" class="box section">
+<h2>Enter Details</h2>
+<input type="text" id="name" placeholder="Full Name">
+<input type="number" id="age" placeholder="Age">
+<input type="text" id="place" placeholder="Place">
+<input type="text" id="mobile" placeholder="Mobile Number">
+<button onclick="showPayment()">Proceed Payment</button>
+</div>
+
+<!-- PAYMENT -->
+<div id="payment" class="box section">
+<h2>Payment Options</h2>
+
+<p id="paymentAmount">Payable Amount: ₹0</p>
+
+<label>
+<input type="radio" name="pay" value="card">
+Credit / Debit Card
+</label>
+
+<label>
+<input type="radio" name="pay" value="upi">
+UPI
+</label>
+
+<button onclick="confirmBooking()">Pay Now</button>
+</div>
+
+<!-- CONFIRMATION -->
+<div id="confirm" class="box section">
+<h2>✨ The Night Is Yours ✨</h2>
+<p>Your booking is confirmed!</p>
+</div>
+
+<script>
+
+/* Signup */
+function signup(){
+let user=document.getElementById("newUser").value;
+let pass=document.getElementById("newPass").value;
+localStorage.setItem("user",user);
+localStorage.setItem("pass",pass);
+alert("Registered Successfully!");
+showLogin();
+}
+
+/* Login */
+function login(){
+let user=document.getElementById("loginUser").value;
+let pass=document.getElementById("loginPass").value;
+if(user==localStorage.getItem("user") && pass==localStorage.getItem("pass")){
+showArtist();
+}else{
+alert("Invalid Login");
+}
+}
+
+/* Navigation */
+function showSignup(){
+hideAll();
+document.getElementById("signup").style.display="block";
+}
+
+function showLogin(){
+hideAll();
+document.getElementById("login").style.display="block";
+}
+
+function showArtist(){
+hideAll();
+document.getElementById("artist").style.display="block";
+}
+
+function showInstruction(){
+hideAll();
+document.getElementById("instruction").style.display="block";
+}
+
+function showSeats(){
+hideAll();
+document.getElementById("seatPage").style.display="block";
+generateSeats();
+}
+
+function showDetails(){
+hideAll();
+document.getElementById("details").style.display="block";
+}
+
+function showPayment(){
+
+if(selectedSeats === 0){
+alert("Please select at least 1 seat");
+return;
+}
+
+hideAll();
+document.getElementById("payment").style.display="block";
+
+let total = selectedSeats * seatPrice;
+
+document.getElementById("paymentAmount").innerText =
+"Payable Amount: ₹" + total;
+}
+function confirmBooking(){
+
+let selectedPayment =
+document.querySelector('input[name="pay"]:checked');
+
+if(!selectedPayment){
+alert("Please select a payment method");
+return;
+}
+
+hideAll();
+document.getElementById("confirm").style.display="block";
+}
+function hideAll(){
+let sections=document.getElementsByClassName("box");
+for(let i=0;i<sections.length;i++){
+sections[i].style.display="none";
+}
+}
+
+/* Seats generate */
+let seatPrice = 999;
+let selectedSeats = 0;
+let shoppingTotal = 0;
+
+function generateSeats(){
+let container=document.getElementById("seats");
+container.innerHTML="";
+selectedSeats = 0;
+
+for(let i=1;i<=40;i++){   // 40 seats now
+let seat=document.createElement("div");
+seat.className="seat";
+seat.innerText=i;
+
+seat.onclick=function(){
+if(this.classList.contains("selected")){
+this.classList.remove("selected");
+selectedSeats--;
+}else{
+this.classList.add("selected");
+selectedSeats++;
+}
+updateTotal();
+}
+
+container.appendChild(seat);
+}
+}
+
+function updateTotal(){
+let total = selectedSeats * seatPrice;
+document.getElementById("totalAmount").innerText =
+"Total Amount: ₹" + total;
+}
+
+
+function showshopping(){
+hideAll();
+document.getElementById("shopping").style.display="block";
+calculateGrandTotal();
+}
+
+function updateShopping(item){
+if(item.checked){
+shoppingTotal += parseInt(item.value);
+}else{
+shoppingTotal -= parseInt(item.value);
+}
+calculateGrandTotal();
+}
+
+function calculateGrandTotal(){
+let total = (selectedSeats * seatPrice) + shoppingTotal;
+
+document.getElementById("grandTotal").innerText =
+"Grand Total: ₹" + total;
+
+document.getElementById("paymentAmount").innerText =
+"Payable Amount: ₹" + total;
+}
+
+</script>
+
+</body>
+</html>
